@@ -53,17 +53,64 @@ class Simplex(object):
                 print "++++++++++++++++++++++++++++"
                 # STEP 2
                 # Get the least negative number Index( i.e. entering Index)
+                # from Non Basic vector
                 j = self.Non_Basic[self.Z_N.argmin()]
 
                 # STEP 3: Calculte delata_X_b
 
                 # to create a unit vector, with all element zero except 1
                 # np.eye(value,size_of_vector,index_of Value)
-                e_j = np.eye(1, len(self.Non_Basic) , j-1)
+                e_j = np.eye(1, len(self.Non_Basic) , self.Non_Basic.index(j))
                 e_j = np.transpose(e_j)
-                delata_X_b = (self.B.dot(self.N)).dot(e_j)
+                delta_X_b = (inv(self.B).dot(self.N)).dot(e_j)
+                delta_X_b = np.reshape(delta_X_b,(delta_X_b.shape[0],))
 
                 # STEP 4: Calculate Primal Step Length
+                t , t_index = self.primalStepLength(delta_X_b,self.X_b)
+
+                # Step 5: Select Leaving Variable
+                # max ratio corresponds to index from Basic (Leaving Variable)
+                i = self.Basic[t_index]
+
+                # STEP 6: Compute Dual Step Direction
+                # to create a unit vector, with all element zero except 1
+                # np.eye(value,size_of_vector,index_of Value)
+
+                e_i = np.eye(1, len(self.Basic) , self.Basic.index(i))
+                e_i = np.transpose(e_i)
+                delta_Z_n = - (np.transpose((inv(self.B)).dot(self.N))).dot(e_i)
+                delta_Z_n = np.reshape(delta_Z_n,(delta_Z_n.shape[0],))
+
+                # STEP 7: Compute Dual Step Length
+                s = self.Z_N[self.Non_Basic.index(j)] / delta_Z_n[self.Non_Basic.index(j)]
+
+                # STEP 8: Update Current Primal and Dual Solutions
+                new_x = t
+                self.X_b = self.X_b - t * delta_X_b
+                new_z = s
+                self.Z_N = self.Z_N - s * delta_Z_n
+
+                # Step 9: Update Basis
+                self.Non_Basic[self.Non_Basic.index(j)] = i
+                self.Basic[self.Basic.index(i)] = j
+
+
+                self.Z_N = self.Z_N * 0
+
+
+    ### Calculate Primal Step Length
+    ### Divide element by element (also conider 0/0 as 0)
+    ### takes the max of the resulted list and return inverse and
+    ### index corresponding to max
+    def primalStepLength(self,delta_x,delta_x_i):
+        print 'Primal Step Length'
+        temp_list=[]
+        for i in range(delta_x_i.shape[0]):
+            temp_list.append(delta_x[i]/delta_x_i[i])
+
+        max_val = max(temp_list)
+        t = 1/max_val
+        return t, temp_list.index(max_val)
 
 
     ### To check all elements in the vectors are positive
