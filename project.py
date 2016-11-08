@@ -48,10 +48,11 @@ class Simplex(object):
             print 'Current solution is optimal.'
         else:
             ### until theres some negative in Z_n
+            # STEP 1: Check for optimality
             while not self.isVectorPositive(self.Z_N):
                 time.sleep(1)
                 print "++++++++++++++++++++++++++++"
-                # STEP 2
+                # STEP 2:
                 # Get the least negative number Index( i.e. entering Index)
                 # from Non Basic vector
                 j = self.Non_Basic[self.Z_N.argmin()]
@@ -94,8 +95,17 @@ class Simplex(object):
                 self.Non_Basic[self.Non_Basic.index(j)] = i
                 self.Basic[self.Basic.index(i)] = j
 
+                b_columns = self.Basic + np.array([-1.0]*len(self.Basic))
+                n_columns = self.Non_Basic + np.array([-1.0]*len(self.Non_Basic))
 
-                self.Z_N = self.Z_N * 0
+                self.B = self.dict_A[: , b_columns.astype(np.int64)]
+                self.N = self.dict_A[: , n_columns.astype(np.int64)]
+
+                self.X_b[self.Basic.index(j)] = new_x
+                self.Z_N[self.Non_Basic.index(i)] = new_z
+
+                self.printAllVariables()
+                #self.Z_N = self.Z_N * 0
 
 
     ### Calculate Primal Step Length
