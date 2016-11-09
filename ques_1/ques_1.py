@@ -209,10 +209,4 @@ simplex = Simplex()
 simplex.printAllVariables()
 simplex.preformSimplex()
 
-'''
-# run assignment Tests
-if simplex.dataEntered:
-    simplex.runAssignmentTest()
-'''
-
 
