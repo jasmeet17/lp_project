@@ -45,6 +45,7 @@ class LinearProgram(object):
         if not self.isVectorPositive(self.X_b):
             print "X_b is <= 0 "
             print "Initial solution is not primal feasible."
+            return
         else :
             print 'X_b >= 0'
             print "Initial solution is primal feasible."
@@ -221,7 +222,7 @@ class LinearProgram(object):
         print "X_n :",
         print self.X_n
 
-        print "Z_N :",
+        print "Z_n :",
         print self.Z_n
         print
 
