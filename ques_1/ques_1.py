@@ -3,6 +3,7 @@ import numpy as np
 from numpy import genfromtxt
 import time
 from numpy.linalg import inv
+import latex_sample
 
 class LinearProgram(object):
 
@@ -39,34 +40,38 @@ class LinearProgram(object):
         self.Z_n = (np.transpose(inv(self.B).dot(self.N))).dot(self.C_b) -1 * self.C_n
 
         self.dataEntered = True
+        self.latex_text = latex_sample.getInitialMatrices(self.dict_A, self.Basic, self.Non_Basic, self.B, self.N, self.X_b, self.Z_n)
+
 
     ### performs the Simplex method
     def preformPrimalSimplex(self):
+        iteration = 1
         if not self.isVectorPositive(self.X_b):
-            print "X_b is <= 0 "
-            print "Initial solution is not primal feasible."
+            # "X_b is <= 0 Initial solution is not primal feasible."
+            self.latex_text += latex_sample.getPrimalInitialCondition(False)
             return
         else :
-            print 'X_b >= 0'
-            print "Initial solution is primal feasible."
+            # 'X_b >= 0 Initial solution is primal feasible.'
+            self.latex_text += latex_sample.getPrimalInitialCondition(True)
 
         if self.isVectorPositive(self.Z_n):
-            print 'Z_n >=0'
-            print 'Current solution is optimal.'
+            # 'Z_n >=0 Current solution is optimal.'
+            pass
+            self.latex_text += latex_sample.firstStepPrimal(iteration,False)
             self.printObjectiveFunction(self.C_n)
             print "Objective Function Value : %s" % self.getObjectiveValue(self.C_n,self.X_b, self.Basic, self.numberOfVaraibles)
+            return
         else:
-            iteration = 1
             ### until theres some negative in Z_n
             # STEP 1: Check for optimality
             while not self.isVectorPositive(self.Z_n):
-                #time.sleep(1)
-                # to count the iteration number
-                print "Iteration number : %s" % iteration
+                self.latex_text += latex_sample.firstStepPrimal(iteration,True)
+
                 # STEP 2:
                 # Get the least negative number Index( i.e. entering Index)
                 # from Non Basic vector
                 j = self.Non_Basic[self.Z_n.argmin()]
+                self.latex_text += latex_sample.secondStepPrimal(self.Z_n.argmin(),j)
 
                 # STEP 3: Calculte delata_X_b
 
@@ -77,13 +82,16 @@ class LinearProgram(object):
                 e_j = np.transpose(e_j)
                 delta_X_b = (inv(self.B).dot(self.N)).dot(e_j)
                 delta_X_b = np.reshape(delta_X_b,(delta_X_b.shape[0],))
+                self.latex_text += latex_sample.thirdStepPrimal(inv(self.B).dot(self.N),e_j,delta_X_b)
 
                 # STEP 4: Calculate Primal Step Length
                 t , t_index = self.primalStepLength(delta_X_b,self.X_b)
+                self.latex_text += latex_sample.fourthStepPrimal(delta_X_b,self.X_b,t)
 
                 # Step 5: Select Leaving Variable
                 # max ratio corresponds to index from Basic (Leaving Variable)
                 i = self.Basic[t_index]
+                self.latex_text += latex_sample.fifthStepPrimal(i)
 
                 # STEP 6: Compute Dual Step Direction
                 # to create a unit vector, with all element zero except 1
@@ -93,15 +101,20 @@ class LinearProgram(object):
                 e_i = np.transpose(e_i)
                 delta_Z_n = - (np.transpose((inv(self.B)).dot(self.N))).dot(e_i)
                 delta_Z_n = np.reshape(delta_Z_n,(delta_Z_n.shape[0],))
+                self.latex_text += latex_sample.sixthStepPrimal(np.transpose((inv(self.B)).dot(self.N)),e_i,delta_Z_n)
 
                 # STEP 7: Compute Dual Step Length
                 s = self.Z_n[self.Non_Basic.index(j)] / delta_Z_n[self.Non_Basic.index(j)]
+                self.latex_text += latex_sample.seventhStepPrimal(s,self.Z_n[self.Non_Basic.index(j)] , delta_Z_n[self.Non_Basic.index(j)])
 
                 # STEP 8: Update Current Primal and Dual Solutions
                 new_x = t
+                old_X_b = self.X_b
                 self.X_b = self.X_b - t * delta_X_b
                 new_z = s
+                old_Z_n = self.Z_n
                 self.Z_n = self.Z_n - s * delta_Z_n
+                self.latex_text += latex_sample.eightStepPrimal(j,i,t,s,old_X_b,old_Z_n,delta_X_b,delta_Z_n,self.X_b,self.Z_n)
 
                 # Step 9: Update Basis
                 self.Non_Basic[self.Non_Basic.index(j)] = i
@@ -116,16 +129,20 @@ class LinearProgram(object):
                 self.X_b[self.Basic.index(j)] = new_x
                 self.Z_n[self.Non_Basic.index(i)] = new_z
 
+                self.latex_text += latex_sample.ninthStepPrimal(self.Basic,self.Non_Basic,self.B,self.N,self.X_b,self.Z_n)
+
                 #self.X_b = (inv(self.B)).dot(self.b)
                 #self.X_b = (inv(self.B)).dot(self.b) - ((inv(self.B)).dot(self.N)).dot(self.X_n)
                 # self.Z_n = (np.transpose(inv(self.B).dot(self.N))).dot(self.C_b) -1 * self.C_n
 
-                self.printAllVariables()
+                #self.printAllVariables()
                 iteration+=1
                 #self.Z_n = self.Z_n * 0
 
             #print "Iteration number : %s" % iteration
+            self.latex_text += latex_sample.firstStepPrimal(iteration,False)
             self.printObjectiveFunction(self.C_n)
+
             print "Objective Function Value : %s" % self.getObjectiveValue(self.C_n,self.X_b, self.Basic, self.numberOfVaraibles)
 
     ### Calculate Primal Step Length
@@ -230,9 +247,44 @@ class LinearProgram(object):
 
 ### create an object of Linear_Prog class
 simplex = LinearProgram()
-simplex.printAllVariables()
-print "###################################"
-print "###################################"
+# simplex.printAllVariables()
 simplex.preformPrimalSimplex()
+
+
+# from latex_helper import latexMatrice
+# from latex_helper import latexCommaSeprated
+# from latex_helper import latexRatios
+#numpyToMatrice(simplex.dict_A)
+# numpyToMatrice(simplex.B)
+# print "+++++++++++"
+# numpyToMatrice(simplex.N)
+# print "+++++++++++"
+# numpyToMatrice(simplex.b)
+# latexMatrice(simplex.Z_n)
+# latexCommaSeprated(simplex.Basic)
+# latexRatios(np.array([1,2,0]),np.array([1,3,5]))
+
+from tex import latex2pdf
+# f= open("new_text.tex", 'w')
+# f.write(it%{'v':'jas'})
+# f.close()
+f = open('simplex.tex','w')
+f.write(simplex.latex_text) # python will convert \n to os.linesep
+f.close()
+
+# f= open("file_2.tex", 'w')
+# f.write(initial_matrices%{'matrice_a':q})
+# f.close()
+print "----"
+
+
+
+
+
+
+
+
+
+
 
 

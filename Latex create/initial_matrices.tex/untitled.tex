@@ -1,0 +1,238 @@
+\documentclass [12pt] {article}
+\usepackage{amsmath}
+\makeatletter
+\renewcommand{\@seccntformat}[1]{}
+\makeatother
+\usepackage{url}
+\usepackage[margin=0.8in]{geometry}
+\pagestyle{plain}
+\begin{document}
+\section*{Initial Matrices and Vector}
+\[
+A  =
+\begin{bmatrix}
+1 & -1 & 1 & 0 & 0 \\
+2 & -1  & 0 &1 & 0\\
+0 & 1 & 0 & 0 & 1\\
+\end{bmatrix}
+\]
+\\
+\[ Initial\ set\  of\  basic\  and\  nonbasic\  indices \]
+\[
+\beta= \left\{3,4,5\right\} \quad and \quad  \nu=\left\{1,2\right\}
+\]
+\\
+\[
+Submatrice\ of \ A
+\]
+
+\[
+B =
+\begin{bmatrix}
+1 & 0 & 0 \\
+0 &1 & 0\\
+0 & 0 & 1\\
+\end{bmatrix} \quad and \quad
+\mathit{N} =
+\begin{bmatrix}
+1 & -1 \\
+2 &-1\\
+0 &1\\
+\end{bmatrix}
+\]
+\\
+\[
+Inital\ values\ of\ the\ basic\ variables\ are\ given\ by
+\]
+\[
+x_B^* = b =
+\begin{bmatrix}
+1 \\
+2 \\
+0\\
+\end{bmatrix}
+\]
+\[
+Inital\ values\ of\ the\ nonbasic\ dual variables\ are\ given\ by\
+\]
+\[
+z_\mathit{N}^*= -c_\mathit{N} =
+\begin{bmatrix}
+-4 \\
+-3 \\
+\end{bmatrix}
+\]
+\\
+\[
+Since\ x_B^*\  \geq \  0, the\ initial\ solution\ is\ primal\ feasible.
+\]
+\section*{First Iteration}
+\subsection{Step 1.}
+\[
+Since\ z_\mathit{N}^*\ has\ some\ negative\ components,\ the\ current\ solution\ is\ not\ optimal.\
+\]
+
+\subsection{Step 2.}
+\[
+Since\ z_\mathit{N}^*\ = \ -4\ and\ this\ is\ the\ most\ negative\ dual\ variables,
+\]
+
+\[
+we\ see\ that\ the\ entering\ index\ is\  j\ =\ 1
+\]
+
+
+\subsection{Step 3.}
+
+\[
+\Delta x_{\mathcal B} = B^{-1} N e_j =
+\begin{bmatrix}
+1 & -1 \\
+2 & -1 \\
+0 & 1 \\
+\end{bmatrix}
+\begin{bmatrix}
+1 \\
+0\\
+\end{bmatrix}
+= \begin{bmatrix}
+1 \\
+2 \\
+0\\
+\end{bmatrix}
+\]
+\subsection{Step 4.}
+\[
+t =\Bigg(
+max= \left\{\frac{1}{1},\frac{2}{0},\frac{0}{5}\right\}
+\Bigg)^{-1}\ =\ 1
+\]
+\subsection{Step 5.}
+\[
+In\ step\ 4, \ the\ ratio\ corresponds\ to\ basic\ index\ 3
+\]
+\[
+i\ = \ 3
+\]
+\subsection{Step 6.}
+\[
+\Delta z_{\mathcal N}= -( B^{-1} N )^{T}e_j = -\
+\begin{bmatrix}
+1 & 2 & 0 \\
+-1 & -1 & -1 \\
+\end{bmatrix}
+\begin{bmatrix}
+1 \\
+0\\
+0\\
+\end{bmatrix}
+= \begin{bmatrix}
+-1 \\
+1 \\
+\end{bmatrix}
+\]
+
+
+\subsection{Step 7.}
+\[
+s \ =\ \frac{z_{\mathcal N}^{*}}{ \Delta z_{\mathcal N}}\ =\ \frac{-4}{-1}\ =\ 4
+\]
+
+\subsection{Step 8.}
+\[
+x_{1}^{*}\ =\ 1, \quad x_{\mathcal B}^{*}\ =\
+\begin{bmatrix}
+1 \\
+3 \\
+5 \\
+\end{bmatrix}\ -1\
+\begin{bmatrix}
+1 \\
+2 \\
+0 \\
+\end{bmatrix}\ =\
+\begin{bmatrix}
+0 \\
+1 \\
+5 \\
+\end{bmatrix}\ ,
+\]
+\\
+
+\[
+z_{3}^{*}\ =\ 1, \quad z_{\mathcal N}^{*}\ =\
+\begin{bmatrix}
+-4 \\
+-3 \\
+\end{bmatrix}\ -4\
+\begin{bmatrix}
+-1 \\
+1 \\
+\end{bmatrix}\ =\
+\begin{bmatrix}
+0 \\
+-7 \\
+\end{bmatrix}\ ,
+\]
+
+\subsection{Step 9.}
+
+\[ New\ set\  of\  basic\  and\  nonbasic\  indices \]
+\[
+\beta= \left\{1,4,5\right\} \quad and \quad  \nu=\left\{3,2\right\}
+\]
+
+\[
+Corresponding\ new\ basis\ and\ nonbasis\ submatrices\ of\ A,
+\]
+\[
+B =
+\begin{bmatrix}
+1 & 0 & 0 \\
+0 &1 & 0\\
+0 & 0 & 1\\
+\end{bmatrix} \quad and \quad
+\mathit{N} =
+\begin{bmatrix}
+1 & -1 \\
+2 &-1\\
+0 &1\\
+\end{bmatrix}
+\]
+
+\[
+New\ Basic\ primal\ variables\ and\ nonbasic\ dual\ variables:
+\]
+\[
+x_{\mathcal B}^{*}\ =\
+\begin{bmatrix}
+x_{1}^{*} \\
+x_{4}^{*} \\
+x_{5}^{*} \\
+\end{bmatrix}\ =\
+\begin{bmatrix}
+1 \\
+1 \\
+5 \\
+\end{bmatrix}\
+\quad
+z_{\mathcal N}^{*}\ =\
+\begin{bmatrix}
+z_{3}^{*} \\
+z_{2}^{*} \\
+\end{bmatrix}\ =\
+\begin{bmatrix}
+4 \\
+-7 \\
+\end{bmatrix}
+\]
+
+\[
+Since\ z_{\mathcal N}^{*}\ has\ all\ non\ negative\ components,\ Optimal\ value\ is
+\]
+\[
+\zeta^{*}\ =\ 4x_{1}^{*}\ +\ 3x_{2}^{*}\ =\ 31
+\]
+
+
+\end{document}
