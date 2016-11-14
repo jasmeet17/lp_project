@@ -38,6 +38,7 @@ class LinearProgram(object):
         self.C_b = np.zeros(len(self.Basic))
         self.Z_n = (np.transpose(inv(self.B).dot(self.N))).dot(self.C_b) -1 * self.C_n
 
+        self.latex_text =''
         self.dataEntered = True
 
     ### performs the Simplex method
@@ -340,5 +341,10 @@ print "###################################"
 print "###################################"
 #linearProblem.preformPrimalSimplex()
 linearProblem.preformDualSimplex()
+
+from tex import latex2pdf
+f = open('simplex.tex','w')
+f.write(simplex.latex_text) # python will convert \n to os.linesep
+f.close()
 
 

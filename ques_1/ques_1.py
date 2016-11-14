@@ -42,16 +42,38 @@ class LinearProgram(object):
         self.dataEntered = True
         self.latex_text = latex_sample.getInitialMatrices(self.dict_A, self.Basic, self.Non_Basic, self.B, self.N, self.X_b, self.Z_n)
 
+    # Since the problem in hand is not dual/primal feasible
+    # applies the phase 1
+    def phaseOne(self):
+        print 'Phase 1'
+        # keep the copy of old Objective Fucntion
+        old_C_n = self.C_n
+
+        # make new primal objective function
+        self.C_n =  np.empty(self.numberOfVaraibles)
+        self.C_n.fill(-1)
+
+        # Update Z_n according to the new C_n
+        self.Z_n = (np.transpose(inv(self.B).dot(self.N))).dot(self.C_b) -1 * self.C_n
+
+
+        # Now we have new primal function and the problem,
+        # becomes Dual Feasible.
+        print "===================================="
+        self.printAllVariables()
+        print "===================================="
+        self.preformDualSimplex()
 
     ### performs the Simplex method
     def preformPrimalSimplex(self):
         iteration = 1
         if not self.isVectorPositive(self.X_b):
-            # "X_b is <= 0 Initial solution is not primal feasible."
+            print "X_b is <= 0 Initial solution is not primal feasible."
             self.latex_text += latex_sample.getPrimalInitialCondition(False)
+            self.phaseOne()
             return
         else :
-            # 'X_b >= 0 Initial solution is primal feasible.'
+            print 'X_b >= 0 Initial solution is primal feasible.'
             self.latex_text += latex_sample.getPrimalInitialCondition(True)
 
         if self.isVectorPositive(self.Z_n):
@@ -135,7 +157,7 @@ class LinearProgram(object):
                 #self.X_b = (inv(self.B)).dot(self.b) - ((inv(self.B)).dot(self.N)).dot(self.X_n)
                 # self.Z_n = (np.transpose(inv(self.B).dot(self.N))).dot(self.C_b) -1 * self.C_n
 
-                #self.printAllVariables()
+                self.printAllVariables()
                 iteration+=1
                 #self.Z_n = self.Z_n * 0
 
@@ -143,6 +165,91 @@ class LinearProgram(object):
             self.latex_text += latex_sample.firstStepPrimal(iteration,False)
             self.printObjectiveFunction(self.C_n)
 
+            print "Objective Function Value : %s" % self.getObjectiveValue(self.C_n,self.X_b, self.Basic, self.numberOfVaraibles)
+
+    ### performs Dual Simplex method
+    def preformDualSimplex(self):
+        if not self.isVectorPositive(self.Z_n):
+            print "Z_n is <= 0 "
+            print "Initial solution is not Dual feasible."
+            return
+        else :
+            print 'Z_n >= 0'
+            print "Initial solution is Dual feasible."
+
+        if self.isVectorPositive(self.X_b):
+            print 'X_b >=0'
+            print 'Current solution is optimal.'
+            self.printObjectiveFunction(self.C_n)
+            print "Objective Function Value : %s" % self.getObjectiveValue(self.C_n,self.X_b, self.Basic, self.numberOfVaraibles)
+        else:
+            iteration = 1
+            ### until theres some negative in Z_n
+            # STEP 1: Check for optimality
+            while not self.isVectorPositive(self.X_b):
+                #time.sleep(1)
+                # to count the iteration number
+                print "Iteration number : %s" % iteration
+                # STEP 2:
+                # Get the least negative number Index( i.e. entering Index)
+                # from Non Basic vector
+                #@@@ j = self.Non_Basic[self.Z_n.argmin()]
+                i = self.Basic[self.X_b.argmin()]
+
+                # STEP 3: Calculte delata_Z_n
+
+                # to create a unit vector, with all element zero except 1
+                # np.eye(value,size_of_vector,index_of Value)
+                e_i = np.eye(1, len(self.Basic) , self.Basic.index(i))
+                e_i = np.transpose(e_i)
+                delta_Z_n = - (np.transpose(inv(self.B).dot(self.N))).dot(e_i)
+                delta_Z_n = np.reshape(delta_Z_n,(delta_Z_n.shape[0],))
+
+                # STEP 4: Calculate Primal Step Length
+                s , s_index = self.primalStepLength(delta_Z_n,self.Z_n)
+
+                # Step 5: Select Leaving Variable
+                # max ratio corresponds to index from Basic (Leaving Variable)
+                j = self.Non_Basic[s_index]
+
+                # STEP 6: Compute Dual Step Direction
+                # to create a unit vector, with all element zero except 1
+                # np.eye(value,size_of_vector,index_of Value)
+
+                e_j = np.eye(1, len(self.Non_Basic) , self.Non_Basic.index(j))
+                e_j = np.transpose(e_j)
+                delta_X_b = ((inv(self.B)).dot(self.N)).dot(e_j)
+                delta_X_b = np.reshape(delta_X_b,(delta_X_b.shape[0],))
+
+                # STEP 7: Compute Dual Step Length
+                t = self.X_b[self.Basic.index(i)] / delta_X_b[self.Basic.index(i)]
+
+                # STEP 8: Update Current Primal and Dual Solutions
+                new_x = t
+                self.X_b = self.X_b - t * delta_X_b
+                new_z = s
+                self.Z_n = self.Z_n - s * delta_Z_n
+
+                # Step 9: Update Basis
+                self.Non_Basic[self.Non_Basic.index(j)] = i
+                self.Basic[self.Basic.index(i)] = j
+
+                b_columns = self.Basic + np.array([-1.0]*len(self.Basic))
+                n_columns = self.Non_Basic + np.array([-1.0]*len(self.Non_Basic))
+
+                self.B = self.dict_A[: , b_columns.astype(np.int64)]
+                self.N = self.dict_A[: , n_columns.astype(np.int64)]
+
+                self.X_b[self.Basic.index(j)] = new_x
+                self.Z_n[self.Non_Basic.index(i)] = new_z
+
+                self.printAllVariables()
+                iteration+=1
+                #self.Z_n = self.Z_n * 0
+
+            print "======= ENDS ======="
+            #print "Iteration number : %s" % iteration
+            self.printObjectiveFunction(self.C_n)
             print "Objective Function Value : %s" % self.getObjectiveValue(self.C_n,self.X_b, self.Basic, self.numberOfVaraibles)
 
     ### Calculate Primal Step Length
@@ -247,34 +354,17 @@ class LinearProgram(object):
 
 ### create an object of Linear_Prog class
 simplex = LinearProgram()
-# simplex.printAllVariables()
+simplex.printAllVariables()
 simplex.preformPrimalSimplex()
+#simplex.preformDualSimplex()
 
 
-# from latex_helper import latexMatrice
-# from latex_helper import latexCommaSeprated
-# from latex_helper import latexRatios
-#numpyToMatrice(simplex.dict_A)
-# numpyToMatrice(simplex.B)
-# print "+++++++++++"
-# numpyToMatrice(simplex.N)
-# print "+++++++++++"
-# numpyToMatrice(simplex.b)
-# latexMatrice(simplex.Z_n)
-# latexCommaSeprated(simplex.Basic)
-# latexRatios(np.array([1,2,0]),np.array([1,3,5]))
-
+'''
 from tex import latex2pdf
-# f= open("new_text.tex", 'w')
-# f.write(it%{'v':'jas'})
-# f.close()
 f = open('simplex.tex','w')
 f.write(simplex.latex_text) # python will convert \n to os.linesep
 f.close()
-
-# f= open("file_2.tex", 'w')
-# f.write(initial_matrices%{'matrice_a':q})
-# f.close()
+'''
 print "----"
 
 
