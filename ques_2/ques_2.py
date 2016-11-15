@@ -342,9 +342,9 @@ print "###################################"
 #linearProblem.preformPrimalSimplex()
 linearProblem.preformDualSimplex()
 
-from tex import latex2pdf
-f = open('simplex.tex','w')
-f.write(simplex.latex_text) # python will convert \n to os.linesep
-f.close()
+# from tex import latex2pdf
+# f = open('simplex.tex','w')
+# f.write(simplex.latex_text) # python will convert \n to os.linesep
+# f.close()
 
 

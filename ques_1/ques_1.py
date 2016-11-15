@@ -5,6 +5,9 @@ import time
 from numpy.linalg import inv
 import latex_sample
 
+old_NBasic=[]
+old_Basic=[]
+
 class LinearProgram(object):
 
     def __init__(self):
@@ -19,7 +22,7 @@ class LinearProgram(object):
         self.b = genfromtxt(sys.argv[3], delimiter=',') # Vector b
         self.numberofConstraints = self.dict_A.shape[0] # m
         self.numberOfVaraibles = self.C_n.shape[0]    # n
-
+        self.C_starts = 0
         self.B = np.identity(self.numberofConstraints)   # Identity Matrix (For Basic Vars)
         self.N = self.dict_A                        # Non-Basic columns
 
@@ -29,6 +32,10 @@ class LinearProgram(object):
         self.Basic =  range(self.N.shape[1]+1, self.N.shape[1] + self.numberofConstraints+1)
         ### track Non Basic-Var Columns
         self.Non_Basic = range(1,self.N.shape[1]+1)
+        # keep copy on Non_Basic for
+        self.old_Non_Basic = self.Non_Basic
+        # keep copy on Basic for
+        self.old_Basic = self.Basic
 
         ### Associated Dual Dictionary
         #self.Z_n = -1 * self.C_n
@@ -56,19 +63,73 @@ class LinearProgram(object):
         # Update Z_n according to the new C_n
         self.Z_n = (np.transpose(inv(self.B).dot(self.N))).dot(self.C_b) -1 * self.C_n
 
+        # get the initial non basic indexes array
+        for x in self.old_Non_Basic:
+            old_NBasic.append(x)
+
+        # get the initial basic indexes array
+        for x in self.old_Basic:
+            old_Basic.append(x)
 
         # Now we have new primal function and the problem,
         # becomes Dual Feasible.
-        print "===================================="
+        print '@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@'
         self.printAllVariables()
-        print "===================================="
+        print "preformDualSimplex ===================================="
         self.preformDualSimplex()
+        print 'Now the problem is Primal Feasible, apply Primal Simplex'
+
+        print self.Basic
+        print old_Basic
+        print "@#@###@#@#@#@##@"
+        print self.Non_Basic
+        print old_NBasic
+        print "&*&*&*&*&*&*&*&*"
+        return
+
+
+        # "the new A is  values are:"
+        temp_A = -(inv(self.B)).dot(self.N)
+
+        # number of terms in the Objective funtion
+        n_terms = temp_A.shape[1] + 1
+
+        # new Objective Funciton
+        sum_array = np.zeros(n_terms)
+
+        for i in range(len(old_NBasic)):
+            temp_array = []
+            if old_NBasic[i] in self.Basic:
+                t = self.Basic.index(old_NBasic[i])
+                temp_array = old_C_n[i] * np.append([self.X_b[t]],temp_A[t])
+            else:
+                temp_array = np.zeros(n_terms)
+                temp_array[i+1] = old_C_n[i]
+            # print "$$$$$"
+            # print temp_array
+            sum_array += temp_array
+
+        for i in range(len(self.C_n)):
+            self.C_n[i] = sum_array[i+1]
+
+        # print '#$#$#$#$#$#$#$#$#$'
+        # print self.C_n
+        # return
+        self.C_starts = sum_array[0]
+        self.Z_n = -1 * self.C_n
+        print self.C_n
+        print "++++++++++++++"
+        return
+        self.printAllVariables()
+        # Now we got the updated Objective function after
+        # applying the phase 1, now apply primal simplex
+        self.preformPrimalSimplex()
 
     ### performs the Simplex method
     def preformPrimalSimplex(self):
         iteration = 1
         if not self.isVectorPositive(self.X_b):
-            print "X_b is <= 0 Initial solution is not primal feasible."
+            print "X_b is < 0 Initial solution is not primal feasible."
             self.latex_text += latex_sample.getPrimalInitialCondition(False)
             self.phaseOne()
             return
@@ -78,7 +139,6 @@ class LinearProgram(object):
 
         if self.isVectorPositive(self.Z_n):
             # 'Z_n >=0 Current solution is optimal.'
-            pass
             self.latex_text += latex_sample.firstStepPrimal(iteration,False)
             self.printObjectiveFunction(self.C_n)
             print "Objective Function Value : %s" % self.getObjectiveValue(self.C_n,self.X_b, self.Basic, self.numberOfVaraibles)
@@ -107,8 +167,16 @@ class LinearProgram(object):
                 self.latex_text += latex_sample.thirdStepPrimal(inv(self.B).dot(self.N),e_j,delta_X_b)
 
                 # STEP 4: Calculate Primal Step Length
-                t , t_index = self.primalStepLength(delta_X_b,self.X_b)
-                self.latex_text += latex_sample.fourthStepPrimal(delta_X_b,self.X_b,t)
+                t , t_index,pivot_flag = self.primalStepLength(delta_X_b,self.X_b)
+
+                # if t less than or equal zero problem in unbounded, So STOP
+                if t > 0:
+                    self.latex_text += latex_sample.fourthStepPrimal(delta_X_b,self.X_b,t)
+                else:
+                    print delta_X_b
+                    print self.X_b
+                    print 'Problem in unbounded. Stop.'
+                    return
 
                 # Step 5: Select Leaving Variable
                 # max ratio corresponds to index from Basic (Leaving Variable)
@@ -157,9 +225,9 @@ class LinearProgram(object):
                 #self.X_b = (inv(self.B)).dot(self.b) - ((inv(self.B)).dot(self.N)).dot(self.X_n)
                 # self.Z_n = (np.transpose(inv(self.B).dot(self.N))).dot(self.C_b) -1 * self.C_n
 
-                self.printAllVariables()
+                # self.printAllVariables()
                 iteration+=1
-                #self.Z_n = self.Z_n * 0
+                self.printAllVariables()
 
             #print "Iteration number : %s" % iteration
             self.latex_text += latex_sample.firstStepPrimal(iteration,False)
@@ -206,7 +274,14 @@ class LinearProgram(object):
                 delta_Z_n = np.reshape(delta_Z_n,(delta_Z_n.shape[0],))
 
                 # STEP 4: Calculate Primal Step Length
-                s , s_index = self.primalStepLength(delta_Z_n,self.Z_n)
+                s , s_index, pivot_flag = self.primalStepLength(delta_Z_n,self.Z_n)
+
+                # if s less than zero problem in unbounded, So STOP.
+                if s >= 0:
+                    pass
+                else:
+                    print 'Problem in unbounded. Stop.'
+                    return
 
                 # Step 5: Select Leaving Variable
                 # max ratio corresponds to index from Basic (Leaving Variable)
@@ -259,11 +334,20 @@ class LinearProgram(object):
     def primalStepLength(self,delta_x,delta_x_i):
         temp_list=[]
         for i in range(delta_x_i.shape[0]):
-            temp_list.append(delta_x[i]/delta_x_i[i])
+            if delta_x_i[i]==0:
+                temp_list.append(0)
+            else:
+                temp_list.append(delta_x[i]/delta_x_i[i])
 
         max_val = max(temp_list)
-        t = 1/max_val
-        return t, temp_list.index(max_val)
+        if max_val == 0:
+            t = 0
+            pivot_flag = True
+        else:
+            t = 1/max_val
+            pivot_flag = False
+
+        return float(t), temp_list.index(max_val) , pivot_flag
 
 
     ### To check all elements in the vectors are positive
@@ -285,11 +369,17 @@ class LinearProgram(object):
     # returns the objective Function value
     def getObjectiveValue(self,vec_c,vec_x,basic_vec,n):
         # this count just to check which has max
+        print "@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@"
+        print vec_c
+        print vec_x
+        print basic_vec
+        print n
         value = 0
         for c in range(len(vec_c)):
             if basic_vec[c]<=n:
                 value += vec_c[c] * vec_x[c]
 
+        value += self.C_starts
         return value
 
     # Prints the Objective function in the Standard form
@@ -354,9 +444,9 @@ class LinearProgram(object):
 
 ### create an object of Linear_Prog class
 simplex = LinearProgram()
-simplex.printAllVariables()
+# simplex.printAllVariables()
 simplex.preformPrimalSimplex()
-#simplex.preformDualSimplex()
+# simplex.preformDualSimplex()
 
 
 '''
