@@ -37,12 +37,61 @@ class CrissCross(object):
         #self.Z_n = -1 * self.C_n
 
         self.X_n = np.zeros(len(self.Non_Basic))
-        self.X_b =  - (inv(self.B).dot(self.N)).dot(self.X_n)
+        self.X_b =  inv(self.B).dot(self.b) - (inv(self.B).dot(self.N)).dot(self.X_n)
 
         self.C_b = np.zeros(len(self.Basic))
         self.Z_n = (np.transpose(inv(self.B).dot(self.N))).dot(self.C_b) -1 * self.C_n
 
         self.dataEntered = True
+
+    def findMaxMinSubscript(self,vec,vec_NB,max_flag):
+        if max_flag:
+            j_z = np.where(vec>=0)
+        else:
+            j_z = np.where(vec<0)
+
+        j_z = j_z[0]
+        print j_z
+        if len(j_z)==1:
+            j_z = j_z[0]
+            return vec_NB[j_z]
+        else:
+            smallest = np.amax(vec_NB)
+            for i in range(len(j_z)):
+                if vec_NB[j_z[i]]<smallest:
+                    smallest = vec_NB[j_z[i]]
+            return smallest
+
+
+
+    def callNonBasicSteps(self,j):
+        # step 3
+        e_j = np.eye(1, len(self.Non_Basic) , self.Non_Basic.index(j))
+        e_j = np.transpose(e_j)
+        delta_X_b = ((inv(self.B)).dot(self.N)).dot(e_j)
+
+        i = self.findMaxMinSubscript(delta_X_b,self.Basic,True)
+        leaving_index = self.Basic.index(i)
+
+        # STEP 4: Calculate Primal Step Length
+        max_val = self.primalStepLength(delta_X_b,self.X_b,leaving_index)
+
+        t = 0
+        t = 1/max_val
+
+        e_i = np.eye(1, len(self.Basic) , self.Basic.index(i))
+        e_i = np.transpose(e_i)
+
+        delta_Z_n = - (np.transpose((inv(self.B)).dot(self.N))).dot(e_i)
+
+        s = self.Z_n[self.Non_Basic.index(j)]/delta_Z_n[self.Non_Basic.index(j)]
+        s= float(s[0])
+
+        self.X_b[self.Basic.index(j)]=t
+        self.X_b = self.X_b - t * delta_X_b
+
+        self.Z_n[self.Non_Basic.index(i)]=s
+        self.Z_n = self.Z_n - s * delta_Z_n
 
     def preformCrissCross(self):
 
@@ -50,27 +99,30 @@ class CrissCross(object):
         if self.isVectorPositive(self.Z_n) and self.isVectorPositive(self.X_b):
             print 'Dictionary is not primal and dual infeasible'
 
-        while self.isVectorPositive(self.Z_n) or self.isVectorPositive(self.X_b):
+        while not self.isVectorPositive(self.Z_n) or not self.isVectorPositive(self.X_b):
             # step 2
-            j = np.argmax(self.Z_n<0)
-            j = self.Non_Basic[j]
+            j_z = self.findMaxMinSubscript(self.Z_n,self.Non_Basic,False)
 
-            # step 3
-            e_j = np.eye(1, len(self.Non_Basic) , self.Non_Basic.index(j))
-            e_j = np.transpose(e_j)
+            print j_z
+            print "@#@#"
 
-            delta_X_b = ((inv(self.B)).dot(self.N)).dot(e_j)
+            i_z = self.findMaxMinSubscript(self.X_b,self.Basic,True)
 
-            # step 4
-            i = np.argmax(delta_X_b<0)
-            j = self.Non_Basic[j]
+            print i_z
+            print "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^"
+            print "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^"
 
-            print "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^"
-            print "j : %s " % j
-            print "\ne_j : \n%s " % e_j
-            print "\ndelta_X_b : \n%s " % delta_X_b
-            print "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^"
 
+            if not self.isVectorPositive(self.Z_n):
+                self.callNonBasicSteps(j_z)
+            else:
+                # self.callBasicSteps()
+                pass
+            return
+
+
+
+            return
 
     ### To check all elements in the vectors are positive
     ### checks Greater than or equal to zero and returns True If so
@@ -121,9 +173,29 @@ class CrissCross(object):
         print self.Z_n
         print
 
+    def primalStepLength(self,delta_x,delta_x_i,leaving_index):
+
+        temp_list=[]
+        infinte_index = -1
+
+        for i in range(delta_x_i.shape[0]):
+            if delta_x_i[i]==0:
+                if delta_x[i]==0:
+                    temp_list.append(0)
+                elif delta_x[i]<0:
+                    temp_list.append(0)
+                elif delta_x[i]>0:
+                    infinte_index = i
+            else:
+                temp_list.append(delta_x[i]/delta_x_i[i])
+
+        return float(temp_list[leaving_index])
+
+
 
 
 ### create an object of Linear_Prog class
 crissCross = CrissCross()
 crissCross.printAllVariables()
+print ''
 crissCross.preformCrissCross()

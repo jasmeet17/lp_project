@@ -9,16 +9,16 @@ import os
 
 class LinearProgram(object):
 
-    def __init__(self):
+    def __init__(self,dict_A,C_n,b):
         if len(sys.argv)!=4:
-            print "Please pass all the files."
-            self.dataEntered = False
-            return
+            pass
+            # print "Please pass all the files."
+            # self.dataEntered = False
 
         ### Simplex Dictionary, Vectors and variables
-        self.dict_A = genfromtxt(sys.argv[1], delimiter=',') # Dictioanry A
-        self.C_n = genfromtxt(sys.argv[2], delimiter=',') # Vector C
-        self.b = genfromtxt(sys.argv[3], delimiter=',') # Vector b
+        self.dict_A = dict_A # Dictioanry A
+        self.C_n = C_n # Vector C
+        self.b = b # Vector b
         self.numberofConstraints = self.dict_A.shape[0] # m
         self.numberOfVaraibles = self.C_n.shape[0]    # n
         self.C_starts = 0
@@ -51,7 +51,7 @@ class LinearProgram(object):
     # Since the problem in hand is not dual/primal feasible
     # applies the phase 1
     def phaseOne(self):
-        print 'Phase 1'
+
         old_NBasic=[]
         old_Basic=[]
 
@@ -76,7 +76,7 @@ class LinearProgram(object):
         # Now we have new primal function and the problem,
         # becomes Dual Feasible.
         self.preformDualSimplex()
-        print 'Now the problem is Primal Feasible, apply Primal Simplex'
+        # print 'Now the problem is Primal Feasible, apply Primal Simplex'
 
         # "the new A is  values are:"
         temp_A = -(inv(self.B)).dot(self.N)
@@ -107,33 +107,32 @@ class LinearProgram(object):
         # applying the phase 1, now apply primal simplex
         self.Old_C_n = old_C_n
 
-        self.preformPrimalSimplex()
+        flag, value =  self.preformPrimalSimplex()
+        return flag,value
 
     ### performs the Simplex method
     def preformPrimalSimplex(self):
         iteration = 1
         if not self.isVectorPositive(self.X_b):
-            print "X_b is < 0 Initial solution is not primal feasible."
+            # print "X_b is < 0 Initial solution is not primal feasible."
             self.latex_text += latex_sample.getPrimalInitialCondition(False)
-            self.phaseOne()
-            return
+            flag, value =self.phaseOne()
+            return flag, value
         else :
-            print 'X_b >= 0 Initial solution is primal feasible.'
+            # print 'X_b >= 0 Initial solution is primal feasible.'
             self.latex_text += latex_sample.getPrimalInitialCondition(True)
 
         if self.isVectorPositive(self.Z_n):
             # 'Z_n >=0 Current solution is optimal.'
             self.latex_text += latex_sample.firstStepPrimal(iteration,False)
             self.printObjectiveFunction(self.Old_C_n, self.C_n)
-            print "Objective Function Value : %s" % self.getObjectiveValue(self.Old_C_n, self.C_n,self.X_b, self.Basic, self.numberOfVaraibles)
+            # print "Objective Function Value : %s" % self.getObjectiveValue(self.Old_C_n, self.C_n,self.X_b, self.Basic, self.numberOfVaraibles)
             return
         else:
             ### until theres some negative in Z_n
             # STEP 1: Check for optimality
             while not self.isVectorPositive(self.Z_n):
-                self.printAllVariables()
-                print 'iteration:'
-                print iteration
+
                 self.latex_text += latex_sample.firstStepPrimal(iteration,True)
 
                 # STEP 2:
@@ -160,8 +159,7 @@ class LinearProgram(object):
                 if infinte_flag:
                     pass
                 elif max_val<=0:
-                    print 'Print problem is unbounded'
-                    return
+                    return -1,'Print problem is unbounded'
                 else:
                     t = 1/max_val
                     self.latex_text += latex_sample.fourthStepPrimal(delta_X_b,self.X_b,t)
@@ -220,33 +218,31 @@ class LinearProgram(object):
 
 
             self.latex_text += latex_sample.firstStepPrimal(iteration,False)
-            self.printObjectiveFunction(self.Old_C_n, self.C_n)
+            # self.printObjectiveFunction(self.Old_C_n, self.C_n)
 
-            print "Objective Function Value : %s" % self.getObjectiveValue(self.Old_C_n, self.C_n,self.X_b, self.Basic, self.numberOfVaraibles)
+            # print "Objective Function Value : %s" % self.getObjectiveValue(self.Old_C_n, self.C_n,self.X_b, self.Basic, self.numberOfVaraibles)
+            return 0, self.getObjectiveValue(self.Old_C_n, self.C_n,self.X_b, self.Basic, self.numberOfVaraibles)
 
     """performs Dual Simplex method"""
     def preformDualSimplex(self):
         if not self.isVectorPositive(self.Z_n):
-            print "Z_n is <= 0 "
-            print "Initial solution is not Dual feasible."
+            # print "Z_n is <= 0 "
+            # print "Initial solution is not Dual feasible."
             return
         else :
-            print 'Z_n >= 0'
-            print "Initial solution is Dual feasible."
+            # print 'Z_n >= 0'
+            # print "Initial solution is Dual feasible."
 
         if self.isVectorPositive(self.X_b):
-            print 'X_b >=0'
-            print 'Current solution is optimal.'
-            self.printObjectiveFunction(self.Old_C_n, self.C_n)
-            print "Objective Function Value : %s" % self.getObjectiveValue(self.Old_C_n, self.C_n,self.X_b, self.Basic, self.numberOfVaraibles)
+            # print 'X_b >=0'
+            # print 'Current solution is optimal.'
+            # self.printObjectiveFunction(self.Old_C_n, self.C_n)
+            # print "Objective Function Value : %s" % self.getObjectiveValue(self.Old_C_n, self.C_n,self.X_b, self.Basic, self.numberOfVaraibles)
         else:
             iteration = 1
             ### until theres some negative in Z_n
             # STEP 1: Check for optimality
             while not self.isVectorPositive(self.X_b):
-
-                # to count the iteration number
-                print "Iteration number : %s" % iteration
                 # STEP 2:
                 # Get the least negative number Index( i.e. entering Index)
                 # from Non Basic vector
@@ -268,8 +264,7 @@ class LinearProgram(object):
                 if infinte_flag:
                     pass
                 elif max_val<=0:
-                    'Print problem is unbounded'
-                    return
+                    return -1,'Print problem is unbounded'
                 else:
                     s = 1/max_val
 
@@ -311,12 +306,13 @@ class LinearProgram(object):
                 if not infinte_flag:
                     self.Z_n[self.Non_Basic.index(i)] = new_z
 
-                self.printAllVariables()
                 iteration+=1
                 #self.Z_n = self.Z_n * 0
 
-            self.printObjectiveFunction(self.Old_C_n, self.C_n)
-            print "Objective Function Value : %s" % self.getObjectiveValue(self.Old_C_n, self.C_n,self.X_b, self.Basic, self.numberOfVaraibles)
+            # self.printObjectiveFunction(self.Old_C_n, self.C_n)
+            # print "Objective Function Value : %s" % self.getObjectiveValue(self.Old_C_n, self.C_n,self.X_b, self.Basic, self.numberOfVaraibles)
+
+            return 0,self.getObjectiveValue(self.Old_C_n, self.C_n,self.X_b, self.Basic, self.numberOfVaraibles)
 
     ### Calculate Primal Step Length
     ### Divide element by element (also conider 0/0 as 0)
@@ -400,7 +396,7 @@ class LinearProgram(object):
             max_func += str(np.round(vec_c[c], decimals=2))
             max_func += " X"+str(c+1)
 
-        print "MAX : %s" % max_func
+        # print "MAX : %s" % max_func
 
     def printAllVariables(self):
         print "======== Varibales values ========"
@@ -438,10 +434,14 @@ class LinearProgram(object):
         print self.Z_n
         print
 
+'''
+dict_A = genfromtxt(sys.argv[1], delimiter=',') # Dictioanry A
+C_n = genfromtxt(sys.argv[2], delimiter=',') # Vector C
+b = genfromtxt(sys.argv[3], delimiter=',') # Vector b
 
 
 ### create an object of Linear_Prog class
-simplex = LinearProgram()
+simplex = LinearProgram(dict_A,C_n,b)
 # simplex.printAllVariables()
 simplex.preformPrimalSimplex()
 # simplex.preformDualSimplex()
@@ -453,7 +453,7 @@ f = open('simplex.tex','w')
 f.write(latex_sample.getWholeLatex(simplex.latex_text)) # python will convert \n to os.linesep
 f.close()
 # os.system("pdflatex simplex.tex")
-
+'''
 
 print "----"
 

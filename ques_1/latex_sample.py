@@ -356,12 +356,7 @@ objectiveFuntion ='''
 '''
 def latexObjectiveFuntion(vec_c,value):
     equation = ''
-    print vec_c
-    print value
-    print "******"
     for i in range(len(vec_c)):
-        print "qwqwq"
-        print i
         if i != len(vec_c)-1:
             equation += "%sx_{%s}^{*}\\ +" % (str(vec_c[i]),str(i+1))
         else:
