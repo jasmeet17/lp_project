@@ -232,12 +232,14 @@ class LinearProgram(object):
         else :
             # print 'Z_n >= 0'
             # print "Initial solution is Dual feasible."
+            pass
 
         if self.isVectorPositive(self.X_b):
             # print 'X_b >=0'
             # print 'Current solution is optimal.'
             # self.printObjectiveFunction(self.Old_C_n, self.C_n)
             # print "Objective Function Value : %s" % self.getObjectiveValue(self.Old_C_n, self.C_n,self.X_b, self.Basic, self.numberOfVaraibles)
+            pass
         else:
             iteration = 1
             ### until theres some negative in Z_n
