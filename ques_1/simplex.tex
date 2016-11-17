@@ -1,4 +1,13 @@
-
+\documentclass [12pt] {article}
+\usepackage{amsmath}
+\makeatletter
+\renewcommand{\@seccntformat}[1]{}
+\makeatother
+\usepackage{url}
+\usepackage[margin=0.8in]{geometry}
+\pagestyle{plain}
+\begin{document}
+\section*{Simplex Method Initial Matrices and Vector} 
 \[
 A  =
 \begin{bmatrix}
@@ -389,3 +398,8 @@ z_{5}^{*} \\z_{4}^{*} \\
 \[
 Since\ z_\mathit{N}^*\ has\ all\ nonnegative\ components,\ the\ current\ solution\ is\ optimal.
 \]
+
+\[
+\zeta^{*} = 4.0x_{1}^{*}\ +3.0x_{2}^{*}\ =\ 31.0
+\]
+ \end{document}

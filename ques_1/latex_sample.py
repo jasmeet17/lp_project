@@ -332,18 +332,60 @@ def ninthStepPrimal(basic,nonbasic,matrice_B,matrice_N,matrice_X,matrice_Z):
     return text
 
 
+final_doc = '''\documentclass [12pt] {article}
+\usepackage{amsmath}
+\makeatletter
+\\renewcommand{\@seccntformat}[1]{}
+\makeatother
+\usepackage{url}
+\usepackage[margin=0.8in]{geometry}
+\pagestyle{plain}
+\\begin{document}
+\section*{Simplex Method Initial Matrices and Vector} %(latex_tex)s \end{document}
 '''
-x = "1 & -1 & 1 & 0 & 0 \\\\ 2 & -1  & 0 &1 & 0\\\\ 0 & 1 & 0 & 0 & 1\\\\"
 
-# a = initial_matrices % {'matrice_a':a}
-# print a
-print x
-from tex import latex2pdf
+def getWholeLatex(latex_text):
+    text = (final_doc % {'latex_tex':latex_text})
+    return text
 
-q = '1 & -1 & 1 & 0 & 0 \\\\ 2 & -1  & 0 &1 & 0\\\\ 0 & 1 & 0 & 0 & 1\\\\ '
 
-f= open("file_2.tex", 'w')
-f.write(initial_matrices%{'matrice_a':q})
-f.close()
-
+objectiveFuntion ='''
+\[
+\zeta^{*} = %(equation)s
+\]
 '''
+def latexObjectiveFuntion(vec_c,value):
+    equation = ''
+    print vec_c
+    print value
+    print "******"
+    for i in range(len(vec_c)):
+        print "qwqwq"
+        print i
+        if i != len(vec_c)-1:
+            equation += "%sx_{%s}^{*}\\ +" % (str(vec_c[i]),str(i+1))
+        else:
+            # equation += "%sx_{%s}^{*}\\ +" % (str(vec_c[i]),str(i+1))
+            equation += "%sx_{%s}^{*}\\ =\\ %s" % (str(vec_c[i]),str(i+1),str(value))
+
+    text = (objectiveFuntion %{'equation':equation})
+    return text
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
