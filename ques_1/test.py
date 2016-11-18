@@ -92,7 +92,7 @@ class Test(unittest.TestCase):
 
         self.assertAlmostEqual(flag,0)
 
-        print "Dual Phase 1 Problem Passed"
+        print 'Two Phase Method Problem Passed'
 
 
 

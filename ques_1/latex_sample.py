@@ -8,7 +8,7 @@ A  =
 \\\\
 \[ Initial\ set\  of\  basic\  and\  nonbasic\  indices \]
 \[
-\\beta= \left\{%(b_indices)s\\right\} \quad and \quad  \\nu=\left\{%(non_b_indices)s\\right\}
+\\beta= \left\{%(b_indices)s\\right\} \quad and \quad  \\mathcal{N}=\left\{%(non_b_indices)s\\right\}
 \]
 \\\\
 \[
@@ -68,40 +68,40 @@ A  =
 \end{document}
 '''
 initial_primal_condition_true = '''\[
-Since\ x_B^*\  \geq \  0, the\ initial\ solution\ is\ primal\ feasible.
+Since\ %(main_ch)s_%(subscript_ch)s^*\  \geq \  0, the\ initial\ solution\ is\ %(solver_type)s\ feasible.
 \]
 '''
 initial_primal_condition_false = '''\[
-Since\ x_B^*\  < \  0, the\ initial\ solution\ is\ primal\ feasible.
+Since\ %(main_ch)s_%(subscript_ch)s^*\  < \  0, the\ initial\ solution\ is\ %(solver_type)s\ feasible.
 \]
 '''
 
-step1_primal_condition_true = '''\section*{Iteration No %(iteration_no)s}
+step1_primal_dual_condition_true = '''\section*{Iteration No %(iteration_no)s}
 \subsection{Step 1.}
 \[
-Since\ z_\mathit{N}^*\ has\ some\ negative\ components,\ the\ current\ solution\ is\ not\ optimal.
+Since\ %(main_ch)s_\mathit{%(subscript_ch)s}^*\ has\ some\ negative\ components,\ the\ current\ solution\ is\ not\ optimal.
 \]
 '''
 
-step1_primal_condition_false = '''\section*{Iteration No %(iteration_no)s}
+step1_primal_dual_condition_false = '''\section*{Iteration No %(iteration_no)s}
 \subsection{Step 1.}
 \[
-Since\ z_\mathit{N}^*\ has\ all\ nonnegative\ components,\ the\ current\ solution\ is\ optimal.
+Since\ %(main_ch)s_\mathit{%(subscript_ch)s}^*\ has\ all\ nonnegative\ components,\ the\ current\ solution\ is\ optimal.
 \]
 '''
-step2_primal = '''\subsection{Step 2.}
+step2_primal_dual = '''\subsection{Step 2.}
 \[
-Since\ z_\mathit{N}^*\ = \ %(negative_no)s\ and\ this\ is\ the\ most\ negative\ dual\ variables,
+Since\ %(main_ch)s_%(index)s^*\ = \ %(negative_no)s\ and\ this\ is\ the\ most\ negative\ dual\ variables,
 \]
 
 \[
-we\ see\ that\ the\ entering\ index\ is\  j\ =\ %(index)s
+we\ see\ that\ the\ entering\ index\ is\  %(var_ch)s\ =\ %(index)s
 \]
 '''
 
-step3_primal = '''\subsection{Step 3.}
+step3_primal = '''\subsection{Step %(step)s.}
 \[
-\Delta x_{\mathcal B} = B^{-1} N e_j =
+\Delta x_{\mathcal B} = B^{-1} N e_%(subscript_ch)s =
 \\begin{bmatrix}
 %(matrice_BN)s
 \end{bmatrix}
@@ -135,50 +135,50 @@ def getInitialMatrices(matrice_A, b_indices, non_b_indices, matrice_B, matrice_N
     return text
 
 # return string based on whether intial condition met (i.e. true else false)
-def getPrimalInitialCondition(bool_value):
+def getInitialCondition(bool_value,main_ch,subscript_ch,solver_type):
     if bool_value:
-        return initial_primal_condition_true
+        return (initial_primal_condition_true % {'main_ch':main_ch,'subscript_ch':subscript_ch,'solver_type':solver_type})
     else:
-        return initial_primal_condition_false
+        return (initial_primal_condition_false % {'main_ch':main_ch,'subscript_ch':subscript_ch, 'solver_type':solver_type})
 
 # bool_value is false in case z_n has some negative; else true and algo stops
 # iteration_no is the iteration number fo the algo
-def firstStepPrimal(iteration_no,bool_value):
+def firstStepPrimalDual(iteration_no,bool_value,main_ch,subscript_ch):
     text = ''
     if bool_value:
-        text = (step1_primal_condition_true % {'iteration_no':iteration_no})
+        text = (step1_primal_dual_condition_true % {'iteration_no':iteration_no, 'main_ch':main_ch,'subscript_ch':subscript_ch})
     else:
-        text = (step1_primal_condition_false % {'iteration_no':iteration_no})
+        text = (step1_primal_dual_condition_false % {'iteration_no':iteration_no, 'main_ch':main_ch,'subscript_ch':subscript_ch})
     return text
 
 
 # second step of primal
 # argument 1 is the most negative number
 # index is the index of the most negative in the nonbasic vector
-def secondStepPrimal(negative_no, index):
-    text = (step2_primal % {'negative_no':negative_no,'index':index})
+def secondStepPrimalDual(negative_no, index,main_ch, var_ch):
+    text = (step2_primal_dual % {'negative_no':negative_no,'index':index, 'main_ch': main_ch, 'var_ch':var_ch})
     return text
 
 # returns the latex string for the third Step of primal method
-def thirdStepPrimal(matrice_BN, matrice_EJ,matrice_Result):
+def thirdStepPrimal(step,matrice_BN, matrice_EJ,matrice_Result,subscript_ch):
 
     matrice_BN = latexMatrice(matrice_BN)
     matrice_EJ = latexMatrice(matrice_EJ)
     matrice_Result = latexMatrice(matrice_Result)
 
-    text = (step3_primal % {'matrice_BN':matrice_BN, 'matrice_EJ':matrice_EJ,'matrice_Result':matrice_Result})
+    text = (step3_primal % {'step':step,'matrice_BN':matrice_BN, 'matrice_EJ':matrice_EJ,'matrice_Result':matrice_Result,'subscript_ch':subscript_ch})
     return text
 
 step4_primal = '''\subsection{Step 4.}
 \[
 t =\Bigg(
-max= \left\{%(ratio)s\\right\}
+max \left\{%(ratio)s\\right\}
 \Bigg)^{-1}\ =\ %(value)s
 \]
 '''
-def fourthStepPrimal(num_array,den_array,value):
+def fourthStepPrimalDual(num_array,den_array,value,var_ch):
     ratio = latexRatios(num_array,den_array)
-    text = (step4_primal % {'ratio':ratio,'value':value})
+    text = (step4_primal % {'ratio':ratio,'value':value,'var_ch':var_ch})
 
     return text
 
@@ -187,17 +187,17 @@ step5_primal = '''\subsection{Step 5.}
 In\ step\ 4, \ the\ ratio\ corresponds\ to\ basic\ index\ %(index)s
 \]
 \[
-i\ = \ %(index)s
+%(var_ch)s\ = \ %(index)s
 \]
 '''
 
-def fifthStepPrimal(index):
-    text = (step5_primal %{'index':index})
+def fifthStepPrimal(index,var_ch):
+    text = (step5_primal %{'index':index,'var_ch':var_ch})
     return text
 
 step6_primal='''\subsection{Step 6.}
 \[
-\Delta z_{\mathcal N}= -( B^{-1} N )^{T}e_i = -\
+\Delta z_{\mathcal N}= -( B^{-1} N )^{T}e_%(subscript_ch)s = -\
 \\begin{bmatrix}
 %(matrice_BN)s
 \end{bmatrix}
@@ -210,21 +210,21 @@ step6_primal='''\subsection{Step 6.}
 \]
 '''
 
-def sixthStepPrimal(matrice_BN,matrice_EI,matrice_Result):
+def sixthStepPrimal(step,matrice_BN,matrice_EI,matrice_Result,subscript_ch):
     matrice_BN = latexMatrice(matrice_BN)
     matrice_EI = latexMatrice(matrice_EI)
     matrice_Result = latexMatrice(matrice_Result)
 
-    text = (step6_primal %{'matrice_BN':matrice_BN,'matrice_EI':matrice_EI,'matrice_Result':matrice_Result})
+    text = (step6_primal %{'step':step,'matrice_BN':matrice_BN,'matrice_EI':matrice_EI,'matrice_Result':matrice_Result,'subscript_ch':subscript_ch})
     return text
 
-step7_primal = '''\subsection{Step 7.}
+step7_primal_dual = '''\subsection{Step 7.}
 \[
-s \ =\ \\frac{z_{\mathcal N}^{*}}{ \Delta z_{\mathcal N}}\ =\ %(ratio)s\ =\ %(value)s
+%(var_ch)s \ =\ \\frac{%(main_ch)s_{%(subscript_ch)s}^{*}}{ \Delta %(main_ch)s_{%(subscript_ch)s}}\ =\ %(ratio)s\ =\ %(value)s
 \]
 '''
-def seventhStepPrimal(value,num,den):
-    text = (step7_primal %{'ratio':latexFraction(num,den),'value':value})
+def seventhStepPrimalDual(value,num,den,var_ch,main_ch,subscript_ch):
+    text = (step7_primal_dual %{'ratio':latexFraction(num,den),'value':value,'var_ch':var_ch,'main_ch':main_ch,'subscript_ch':subscript_ch})
     return text
 
 
@@ -277,7 +277,7 @@ step9_primal='''\subsection{Step 9.}
 
 \[ New\ set\  of\  basic\  and\  nonbasic\  indices \]
 \[
-\\beta= \left\{%(basic)s\\right\} \quad and \quad  \\nu=\left\{%(nonbasic)s\\right\}
+\\beta= \left\{%(basic)s\\right\} \quad and \quad  \\mathcal{N}=\left\{%(nonbasic)s\\right\}
 \]
 
 \[
@@ -341,7 +341,7 @@ final_doc = '''\documentclass [12pt] {article}
 \usepackage[margin=0.8in]{geometry}
 \pagestyle{plain}
 \\begin{document}
-\section*{Simplex Method Initial Matrices and Vector} %(latex_tex)s \end{document}
+\section*{Dual Simplex Method Initial Matrices and Vector} %(latex_tex)s \end{document}
 '''
 
 def getWholeLatex(latex_text):

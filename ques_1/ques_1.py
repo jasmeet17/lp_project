@@ -115,16 +115,16 @@ class LinearProgram(object):
         iteration = 1
         if not self.isVectorPositive(self.X_b):
             # print "X_b is < 0 Initial solution is not primal feasible."
-            self.latex_text += latex_sample.getPrimalInitialCondition(False)
+            self.latex_text += latex_sample.getInitialCondition(False,'x','B','Primal')
             flag, value =self.phaseOne()
             return flag, value
         else :
             # print 'X_b >= 0 Initial solution is primal feasible.'
-            self.latex_text += latex_sample.getPrimalInitialCondition(True)
+            self.latex_text += latex_sample.getInitialCondition(True,'x','B','Primal')
 
         if self.isVectorPositive(self.Z_n):
             # 'Z_n >=0 Current solution is optimal.'
-            self.latex_text += latex_sample.firstStepPrimal(iteration,False)
+            self.latex_text += latex_sample.firstStepPrimalDual(iteration,False,'z','N')
             self.printObjectiveFunction(self.Old_C_n, self.C_n)
             # print "Objective Function Value : %s" % self.getObjectiveValue(self.Old_C_n, self.C_n,self.X_b, self.Basic, self.numberOfVaraibles)
             return
@@ -133,13 +133,13 @@ class LinearProgram(object):
             # STEP 1: Check for optimality
             while not self.isVectorPositive(self.Z_n):
 
-                self.latex_text += latex_sample.firstStepPrimal(iteration,True)
+                self.latex_text += latex_sample.firstStepPrimalDual(iteration,True,'z','N')
 
                 # STEP 2:
                 # Get the least negative number Index( i.e. entering Index)
                 # from Non Basic vector
                 j = self.Non_Basic[self.Z_n.argmin()]
-                self.latex_text += latex_sample.secondStepPrimal(self.Z_n.argmin(),j)
+                self.latex_text += latex_sample.secondStepPrimalDual(self.Z_n[self.Z_n.argmin()],j,'z','j')
 
                 # STEP 3: Calculte delata_X_b
 
@@ -150,7 +150,7 @@ class LinearProgram(object):
                 e_j = np.transpose(e_j)
                 delta_X_b = (inv(self.B).dot(self.N)).dot(e_j)
                 delta_X_b = np.reshape(delta_X_b,(delta_X_b.shape[0],))
-                self.latex_text += latex_sample.thirdStepPrimal(inv(self.B).dot(self.N),e_j,delta_X_b)
+                self.latex_text += latex_sample.thirdStepPrimal(3,inv(self.B).dot(self.N),e_j,delta_X_b,'j')
 
                 # STEP 4: Calculate Primal Step Length
                 max_val , t_index, infinte_flag = self.primalStepLength(delta_X_b,self.X_b)
@@ -162,12 +162,12 @@ class LinearProgram(object):
                     return -1,'Print problem is unbounded'
                 else:
                     t = 1/max_val
-                    self.latex_text += latex_sample.fourthStepPrimal(delta_X_b,self.X_b,t)
+                    self.latex_text += latex_sample.fourthStepPrimalDual(delta_X_b,self.X_b,t,'t')
 
                 # Step 5: Select Leaving Variable
                 # max ratio corresponds to index from Basic (Leaving Variable)
                 i = self.Basic[t_index]
-                self.latex_text += latex_sample.fifthStepPrimal(i)
+                self.latex_text += latex_sample.fifthStepPrimal(i,'i')
 
                 # STEP 6: Compute Dual Step Direction
                 # to create a unit vector, with all element zero except 1
@@ -177,11 +177,11 @@ class LinearProgram(object):
 
                 delta_Z_n = - (np.transpose((inv(self.B)).dot(self.N))).dot(e_i)
                 delta_Z_n = np.reshape(delta_Z_n,(delta_Z_n.shape[0],))
-                self.latex_text += latex_sample.sixthStepPrimal(np.transpose((inv(self.B)).dot(self.N)),e_i,delta_Z_n)
+                self.latex_text += latex_sample.sixthStepPrimal(6,np.transpose((inv(self.B)).dot(self.N)),e_i,delta_Z_n,'i')
 
                 # STEP 7: Compute Dual Step Length
                 s = self.Z_n[self.Non_Basic.index(j)] / delta_Z_n[self.Non_Basic.index(j)]
-                self.latex_text += latex_sample.seventhStepPrimal(s,self.Z_n[self.Non_Basic.index(j)] , delta_Z_n[self.Non_Basic.index(j)])
+                self.latex_text += latex_sample.seventhStepPrimalDual(s,self.Z_n[self.Non_Basic.index(j)] , delta_Z_n[self.Non_Basic.index(j)],'s','z',j)
 
                 # STEP 8: Update Current Primal and Dual Solutions
                 # if while calculating max ratio we get infinete; we don't update X with t
@@ -217,7 +217,7 @@ class LinearProgram(object):
                 iteration+=1
 
 
-            self.latex_text += latex_sample.firstStepPrimal(iteration,False)
+            self.latex_text += latex_sample.firstStepPrimalDual(iteration,False,'z','N')
             # self.printObjectiveFunction(self.Old_C_n, self.C_n)
 
             # print "Objective Function Value : %s" % self.getObjectiveValue(self.Old_C_n, self.C_n,self.X_b, self.Basic, self.numberOfVaraibles)
@@ -228,28 +228,32 @@ class LinearProgram(object):
         if not self.isVectorPositive(self.Z_n):
             # print "Z_n is <= 0 "
             # print "Initial solution is not Dual feasible."
+            self.latex_text += latex_sample.getInitialCondition(False,'z','N','Dual')
             return
         else :
             # print 'Z_n >= 0'
             # print "Initial solution is Dual feasible."
-            pass
+            self.latex_text += latex_sample.getInitialCondition(True,'z','N','Dual')
 
         if self.isVectorPositive(self.X_b):
             # print 'X_b >=0'
             # print 'Current solution is optimal.'
             # self.printObjectiveFunction(self.Old_C_n, self.C_n)
             # print "Objective Function Value : %s" % self.getObjectiveValue(self.Old_C_n, self.C_n,self.X_b, self.Basic, self.numberOfVaraibles)
+            self.latex_text += latex_sample.firstStepPrimalDual(iteration,False,'x','B')
             pass
         else:
             iteration = 1
             ### until theres some negative in Z_n
             # STEP 1: Check for optimality
             while not self.isVectorPositive(self.X_b):
+
+                self.latex_text += latex_sample.firstStepPrimalDual(iteration,True,'x','B')
                 # STEP 2:
                 # Get the least negative number Index( i.e. entering Index)
                 # from Non Basic vector
                 i = self.Basic[self.X_b.argmin()]
-
+                self.latex_text += latex_sample.secondStepPrimalDual(self.X_b[self.X_b.argmin()],i,'x','i')
                 # STEP 3: Calculte delata_Z_n
 
                 # to create a unit vector, with all element zero except 1
@@ -258,6 +262,7 @@ class LinearProgram(object):
                 e_i = np.transpose(e_i)
                 delta_Z_n = - (np.transpose(inv(self.B).dot(self.N))).dot(e_i)
                 delta_Z_n = np.reshape(delta_Z_n,(delta_Z_n.shape[0],))
+                self.latex_text += latex_sample.sixthStepPrimal(3,np.transpose((inv(self.B)).dot(self.N)),e_i,delta_Z_n,'i')
 
                 # STEP 4: Calculate Primal Step Length
                 max_val , s_index, infinte_flag = self.primalStepLength(delta_Z_n,self.Z_n)
@@ -269,10 +274,13 @@ class LinearProgram(object):
                     return -1,'Print problem is unbounded'
                 else:
                     s = 1/max_val
+                    self.latex_text += latex_sample.fourthStepPrimalDual(delta_Z_n,self.Z_n,s,'s')
 
                 # Step 5: Select Leaving Variable
                 # max ratio corresponds to index from Basic (Leaving Variable)
                 j = self.Non_Basic[s_index]
+                self.latex_text += latex_sample.fifthStepPrimal(j,'j')
+
 
                 # STEP 6: Compute Dual Step Direction
                 # to create a unit vector, with all element zero except 1
@@ -282,9 +290,12 @@ class LinearProgram(object):
                 e_j = np.transpose(e_j)
                 delta_X_b = ((inv(self.B)).dot(self.N)).dot(e_j)
                 delta_X_b = np.reshape(delta_X_b,(delta_X_b.shape[0],))
+                self.latex_text += latex_sample.thirdStepPrimal(6,inv(self.B).dot(self.N),e_j,delta_X_b,'j')
+
 
                 # STEP 7: Compute Dual Step Length
                 t = self.X_b[self.Basic.index(i)] / delta_X_b[self.Basic.index(i)]
+                self.latex_text += latex_sample.seventhStepPrimalDual(t,self.X_b[self.Basic.index(i)] , delta_X_b[self.Basic.index(i)],'t','x',j)
 
                 # STEP 8: Update Current Primal and Dual Solutions
                 new_x = t
@@ -293,6 +304,7 @@ class LinearProgram(object):
                 if not infinte_flag:
                     new_z = s
                     self.Z_n = self.Z_n - s * delta_Z_n
+                    # self.latex_text += latex_sample.eightStepPrimal(j,i,t,s,old_X_b,old_Z_n,delta_X_b,delta_Z_n,self.X_b,self.Z_n)
 
                 # Step 9: Update Basis
                 self.Non_Basic[self.Non_Basic.index(j)] = i
@@ -309,8 +321,10 @@ class LinearProgram(object):
                     self.Z_n[self.Non_Basic.index(i)] = new_z
 
                 iteration+=1
+                self.latex_text += latex_sample.ninthStepPrimal(self.Basic,self.Non_Basic,self.B,self.N,self.X_b,self.Z_n)
                 #self.Z_n = self.Z_n * 0
 
+            self.latex_text += latex_sample.firstStepPrimalDual(iteration,False,'x','B')
             # self.printObjectiveFunction(self.Old_C_n, self.C_n)
             # print "Objective Function Value : %s" % self.getObjectiveValue(self.Old_C_n, self.C_n,self.X_b, self.Basic, self.numberOfVaraibles)
 
@@ -436,7 +450,7 @@ class LinearProgram(object):
         print self.Z_n
         print
 
-'''
+
 dict_A = genfromtxt(sys.argv[1], delimiter=',') # Dictioanry A
 C_n = genfromtxt(sys.argv[2], delimiter=',') # Vector C
 b = genfromtxt(sys.argv[3], delimiter=',') # Vector b
@@ -445,17 +459,17 @@ b = genfromtxt(sys.argv[3], delimiter=',') # Vector b
 ### create an object of Linear_Prog class
 simplex = LinearProgram(dict_A,C_n,b)
 # simplex.printAllVariables()
-simplex.preformPrimalSimplex()
-# simplex.preformDualSimplex()
+# simplex.preformPrimalSimplex()
+simplex.preformDualSimplex()
 
 
 
 from tex import latex2pdf
-f = open('simplex.tex','w')
+f = open('dual.tex','w')
 f.write(latex_sample.getWholeLatex(simplex.latex_text)) # python will convert \n to os.linesep
 f.close()
-# os.system("pdflatex simplex.tex")
-'''
+os.system("pdflatex dual.tex")
+
 
 print "----"
 
