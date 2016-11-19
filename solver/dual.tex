@@ -1,0 +1,251 @@
+\documentclass [12pt] {article}
+\usepackage{amsmath}
+\makeatletter
+\renewcommand{\@seccntformat}[1]{}
+\makeatother
+\usepackage{url}
+\usepackage[margin=0.8in]{geometry}
+\pagestyle{plain}
+\begin{document}
+\section*{Dual Simplex Method Initial Matrices and Vector} 
+\[
+A  =
+\begin{bmatrix}
+-2.0 & -1.0 & 1.0 & 0.0 & 0.0 \\ -2.0 & 4.0 & 0.0 & 1.0 & 0.0 \\ -1.0 & 3.0 & 0.0 & 0.0 & 1.0 \\ 
+\end{bmatrix}
+\]
+\\
+\[ Initial\ set\  of\  basic\  and\  nonbasic\  indices \]
+\[
+\beta= \left\{3, 4, 5\right\} \quad and \quad  \mathcal{N}=\left\{1, 2\right\}
+\]
+\\
+\[
+Submatrice\ of \ A
+\]
+
+\[
+B =
+\begin{bmatrix}
+1.0 & 0.0 & 0.0 \\ 0.0 & 1.0 & 0.0 \\ 0.0 & 0.0 & 1.0 \\ 
+\end{bmatrix} \quad and \quad
+\mathit{N} =
+\begin{bmatrix}
+-2.0 & -1.0 \\ -2.0 & 4.0 \\ -1.0 & 3.0 \\ 
+\end{bmatrix}
+\]
+\\
+\[
+Inital\ values\ of\ the\ basic\ variables\ are\ given\ by
+\]
+\[
+x_B^* = b =
+\begin{bmatrix}
+4.0 \\ -8.0 \\ -7.0 \\ 
+\end{bmatrix}
+\]
+\[
+Inital\ values\ of\ the\ nonbasic\ dual variables\ are\ given\ by
+\]
+\[
+z_\mathit{N}^*= -c_\mathit{N} =
+\begin{bmatrix}
+1.0 \\ 1.0 \\ 
+\end{bmatrix}
+\]
+\\
+\[
+Since\ z_N^*\  \geq \  0, the\ initial\ solution\ is\ Dual\ feasible.
+\]
+\section*{Iteration No 1}
+\subsection{Step 1.}
+\[
+Since\ x_\mathit{B}^*\ has\ some\ negative\ components,\ the\ current\ solution\ is\ not\ optimal.
+\]
+\subsection{Step 2.}
+\[
+Since\ x_4^*\ = \ -8.0\ and\ this\ is\ the\ most\ negative\ dual\ variables,
+\]
+
+\[
+we\ see\ that\ the\ entering\ index\ is\  i\ =\ 4
+\]
+\subsection{Step 3.}
+\[
+\Delta z_{\mathcal N}= -( B^{-1} N )^{T}e_i = -\begin{bmatrix}
+-2.0 & -2.0 & -1.0 \\ -1.0 & 4.0 & 3.0 \\ 
+\end{bmatrix}
+\begin{bmatrix}
+0.0 \\ 1.0 \\ 0.0 \\ 
+\end{bmatrix}
+= \begin{bmatrix}
+2.0 \\ -4.0 \\ 
+\end{bmatrix}
+\]
+\subsection{Step 4.}
+\[
+t =\Bigg(
+max \left\{\frac{2.0}{1.0},\frac{-4.0}{1.0}\right\}
+\Bigg)^{-1}\ =\ 0.5
+\]
+\subsection{Step 5.}
+\[
+In\ step\ 4, \ the\ ratio\ corresponds\ to\ basic\ index\ 1
+\]
+\[
+j\ = \ 1
+\]
+\subsection{Step 6.}
+\[
+\Delta x_{\mathcal B} = B^{-1} N e_j =
+\begin{bmatrix}
+-2.0 & -1.0 \\ -2.0 & 4.0 \\ -1.0 & 3.0 \\ 
+\end{bmatrix}
+\begin{bmatrix}
+1.0 \\ 0.0 \\ 
+\end{bmatrix}
+= \begin{bmatrix}
+-2.0 \\ -2.0 \\ -1.0 \\ 
+\end{bmatrix}
+\]
+\subsection{Step 7.}
+\[
+t \ =\ \frac{x_{1}^{*}}{ \Delta x_{1}}\ =\ \frac{-8.0}{-2.0}\ =\ 4.0
+\]
+\subsection{Step 9.}
+
+\[ New\ set\  of\  basic\  and\  nonbasic\  indices \]
+\[
+\beta= \left\{3, 1, 5\right\} \quad and \quad  \mathcal{N}=\left\{4, 2\right\}
+\]
+
+\[
+Corresponding\ new\ basis\ and\ nonbasis\ submatrices\ of\ A,
+\]
+\[
+B =
+\begin{bmatrix}
+1.0 & -2.0 & 0.0 \\ 0.0 & -2.0 & 0.0 \\ 0.0 & -1.0 & 1.0 \\ 
+\end{bmatrix} \quad and \quad
+\mathit{N} =
+\begin{bmatrix}
+0.0 & -1.0 \\ 1.0 & 4.0 \\ 0.0 & 3.0 \\ 
+\end{bmatrix}
+\]
+
+\[
+New\ Basic\ primal\ variables\ and\ nonbasic\ dual\ variables:
+\]
+\[
+x_{\mathcal B}^{*}\ =\begin{bmatrix}
+x_{3}^{*} \\x_{1}^{*} \\x_{5}^{*} \\
+\end{bmatrix}\ =\begin{bmatrix}
+12.0 \\ 4.0 \\ -3.0 \\ 
+\end{bmatrix}\quad
+z_{\mathcal N}^{*}\ =\begin{bmatrix}
+z_{4}^{*} \\z_{2}^{*} \\
+\end{bmatrix}\ =\begin{bmatrix}
+0.5 \\ 3.0 \\ 
+\end{bmatrix}
+\]
+\section*{Iteration No 2}
+\subsection{Step 1.}
+\[
+Since\ x_\mathit{B}^*\ has\ some\ negative\ components,\ the\ current\ solution\ is\ not\ optimal.
+\]
+\subsection{Step 2.}
+\[
+Since\ x_5^*\ = \ -3.0\ and\ this\ is\ the\ most\ negative\ dual\ variables,
+\]
+
+\[
+we\ see\ that\ the\ entering\ index\ is\  i\ =\ 5
+\]
+\subsection{Step 3.}
+\[
+\Delta z_{\mathcal N}= -( B^{-1} N )^{T}e_i = -\begin{bmatrix}
+-1.0 & -0.5 & -0.5 \\ -5.0 & -2.0 & 1.0 \\ 
+\end{bmatrix}
+\begin{bmatrix}
+0.0 \\ 0.0 \\ 1.0 \\ 
+\end{bmatrix}
+= \begin{bmatrix}
+0.5 \\ -1.0 \\ 
+\end{bmatrix}
+\]
+\subsection{Step 4.}
+\[
+t =\Bigg(
+max \left\{\frac{0.5}{0.5},\frac{-1.0}{3.0}\right\}
+\Bigg)^{-1}\ =\ 1.0
+\]
+\subsection{Step 5.}
+\[
+In\ step\ 4, \ the\ ratio\ corresponds\ to\ basic\ index\ 4
+\]
+\[
+j\ = \ 4
+\]
+\subsection{Step 6.}
+\[
+\Delta x_{\mathcal B} = B^{-1} N e_j =
+\begin{bmatrix}
+-1.0 & -5.0 \\ -0.5 & -2.0 \\ -0.5 & 1.0 \\ 
+\end{bmatrix}
+\begin{bmatrix}
+1.0 \\ 0.0 \\ 
+\end{bmatrix}
+= \begin{bmatrix}
+-1.0 \\ -0.5 \\ -0.5 \\ 
+\end{bmatrix}
+\]
+\subsection{Step 7.}
+\[
+t \ =\ \frac{x_{4}^{*}}{ \Delta x_{4}}\ =\ \frac{-3.0}{-0.5}\ =\ 6.0
+\]
+\subsection{Step 9.}
+
+\[ New\ set\  of\  basic\  and\  nonbasic\  indices \]
+\[
+\beta= \left\{3, 1, 4\right\} \quad and \quad  \mathcal{N}=\left\{5, 2\right\}
+\]
+
+\[
+Corresponding\ new\ basis\ and\ nonbasis\ submatrices\ of\ A,
+\]
+\[
+B =
+\begin{bmatrix}
+1.0 & -2.0 & 0.0 \\ 0.0 & -2.0 & 1.0 \\ 0.0 & -1.0 & 0.0 \\ 
+\end{bmatrix} \quad and \quad
+\mathit{N} =
+\begin{bmatrix}
+0.0 & -1.0 \\ 0.0 & 4.0 \\ 1.0 & 3.0 \\ 
+\end{bmatrix}
+\]
+
+\[
+New\ Basic\ primal\ variables\ and\ nonbasic\ dual\ variables:
+\]
+\[
+x_{\mathcal B}^{*}\ =\begin{bmatrix}
+x_{3}^{*} \\x_{1}^{*} \\x_{4}^{*} \\
+\end{bmatrix}\ =\begin{bmatrix}
+18.0 \\ 7.0 \\ 6.0 \\ 
+\end{bmatrix}\quad
+z_{\mathcal N}^{*}\ =\begin{bmatrix}
+z_{5}^{*} \\z_{2}^{*} \\
+\end{bmatrix}\ =\begin{bmatrix}
+1.0 \\ 4.0 \\ 
+\end{bmatrix}
+\]
+\section*{Iteration No 3}
+\subsection{Step 1.}
+\[
+Since\ x_\mathit{B}^*\ has\ all\ nonnegative\ components,\ the\ current\ solution\ is\ optimal.
+\]
+
+\[
+\zeta^{*} = -1.0x_{1}^{*}\ +-1.0x_{2}^{*}\ =\ -7.0
+\]
+ \end{document}
